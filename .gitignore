@@ -1,7 +1,8 @@
-main.py
+*.pyc
 
 credentials.json
 key.json
 token.json
 
-*.pyc
+main.py
+

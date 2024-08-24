@@ -1,10 +1,9 @@
 # from flask import Flask
 from fastapi import FastAPI, Request, Response, BackgroundTasks
-from slack import WebClient
 import uvicorn
 import time
 import ssl
-
+import slack
 import requests
 import asyncio
 import aiohttp
@@ -12,7 +11,6 @@ import aiohttp
 # from slackeventsapi import SlackEventAdapter
 
 from googlesheets.theeds import grade
-from googlesheets.notification import check_assignments
 import slacks.api as slackAPI
 
 CHANNEL_ID_CAMPY = "#campy"
@@ -30,7 +28,7 @@ def get_slack_client():
     ssl_context.check_hostname = False
     ssl_context.verify_mode = ssl.CERT_NONE
 
-    client = WebClient(token=SLACK_TOKEN, ssl=ssl_context)
+    client = slack.WebClient(token=SLACK_TOKEN, ssl=ssl_context)
     # client = slack.WebClient(token=SLACK_TOKEN)
     client.chat_postMessage(channel=CHANNEL_ID_CAMPY,text='Hello your bot here, what can I do for you?')    
     
@@ -96,87 +94,53 @@ async def production_status(request: Request):
     slack_client.chat_postMessage(channel=CHANNEL_ID_CAMPY, text=f'Calculated some grades: DONE!')
     return {"message": "production status checked"}
 
-async def grade(slack_client: WebClient, context: dict, background_tasks: BackgroundTasks):
-    
-    print(f'production_status(): got the grading request...')
-    # command = data.get('command')
-    text = context.get('text')
-    response_url = context.get('response_url')
-    user_id = context.get('user_id')
-    channel_id = context.get('channel_id')
-
-    # if command == '/campy':
-    # Send immediate acknowledgment
-    slack_client.chat_postMessage(
-        channel=CHANNEL_ID_CAMPY,
-        text="Starting grading process. You will receive a response shortly."
-    )
-
-    ack_response = "Processing your request. This might take a few seconds..."
-    
-    # Send delayed response
-    response_text = "After processing, production status checked, and grading DONE"
-    await launch_task(background_tasks, response_url, response_text)
-
-    return ack_response
-
-def send_notification(client: WebClient, writer: str, tasks: list, users: dict):
-    """
-        Send writer slack message to remind incomplete tasks 
-    """  
-    userId = slackAPI.get_id_by_name(users, writer)
-    if userId == "": # no valid writer to send message
-        return
-    mesg = ""
-    for task in tasks:
-        mesg += task + ' '
-    client.chat_postMessage(channel=CHANNEL_ID_CAMPY, text=f'Hey <@{userId}> A gentle reminder that your {mesg}')
-    print(f'send_notification(): {writer} - {mesg}')  
-    
-
-def notify(client: WebClient, users: dict):
-    """
-        Notify writers of incomplete assignments
-    """
-
-    assignments = check_assignments()
-    # art_assignments = utils.get_sheet_values(ASSIGNMENTS_SHEET_ID, ART_ASSIGNMENTS_RANGE_NAME)
-    # parse_art_assignments(grades, art_assignments)
-    # social_media = utils.get_sheet_values(ASSIGNMENTS_SHEET_ID, SOCIAL_MEDIA_RANGE_NAME)
-    # parse_social_media(grades, social_media)
-    for writer, tasks in assignments.items():
-        print(f'notify(): writer = {writer}, tasks = {tasks}')
-        send_notification(client, writer, tasks, users)
-    print(f'notify(): got {len(assignments)} writers to notify...')
-    return "Checking assignments status, will notify writers shortly..."
-
-
 @app.post("/productions")
 async def production_status(request: Request, background_tasks: BackgroundTasks):
     slack_client = get_slack_client()
-    print("production_status(): Starting grading process... ")
-
-    context = await slackAPI.get_command(request)
-    sub_command = slackAPI.get_subcommand(context)
-    # print(f'production_status(): sub_command = {sub_command}')
-
-    if sub_command is None or sub_command == '':
-        # default no-op
-        slack_client.chat_postMessage(channel=CHANNEL_ID_CAMPY, 
-                                        text=f'Usage: - grade - notify')
-        return
+    print("Starting grading process... ")
+    slack_client.chat_postMessage(channel=CHANNEL_ID_CAMPY, 
+                                  text=f'Starting grading process, which will take a few moments, stay tuned...')
+       
+    slackAPI.get_users(slack_client)
     
     headers = request.headers
-    # print(f'production_status(): headers = {headers}')
-    users = slackAPI.get_users(slack_client)
+    print(f'production_status(): headers = {headers}')
+
+    data = await request.form()
+
+    print(f'production_status(): formData = {data}')
+    if data is not None and data.get('command') == COMMAND_CAMPY:
+        print(f'production_status(): got the grading request...')
+        # command = data.get('command')
+        text = data.get('text')
+        response_url = data.get('response_url')
+        user_id = data.get('user_id')
+        channel_id = data.get('channel_id')
+
+        # if command == '/campy':
+        # Send immediate acknowledgment
+        slack_client.chat_postMessage(
+            channel=CHANNEL_ID_CAMPY,
+            text="Your request is being processed. You will receive a response shortly."
+        )
+
+        ack_response = "Processing your request. This might take a few seconds..."
+        
+        # Send delayed response
+        response_text = "After processing, production status checked, grading DONE" # "This is the delayed response after 10 seconds."
+        await launch_task(background_tasks, response_url, response_text)
+
+        return ack_response
     
-    print(f'production_status(): users = {users}')
+            # return {'message': response_text}
+        # slack_client.chat_postMessage(
+        #     channel=channel_id,
+        #     text=response_text
+        # )
+        # slack_client.chat_postMessage(channel=CHANNEL_ID_CAMPY, text=f'Hey <@U076YT1E28Z> Calculated some grades: DONE!')
+        # slack_client.chat_postMessage(channel=CHANNEL_ID_CAMPY, text=f'Hi <!channel> Calculated some grades: All DONE!')
 
-    if sub_command == 'grade':
-        grade(slack_client, context, background_tasks)
-    elif sub_command == 'notify':
-        notify(slack_client, users)
-
+        # return {"message": "production status checked, grading DONE"}
 
 @app.get("/")
 @app.get("/index")

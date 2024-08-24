@@ -29,8 +29,6 @@ UPLOADS_COL_START = 2
 UPLOADS_COL_END = 6
 UPLOADS_MAX_NUM = 5
 
-STORY_ASSIGNMENTS_RANGE_NAME = "Story Assignments!A2:F"
-
 def parse_completions(grades: dict, values: list):
     if not values:
         return {}

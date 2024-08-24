@@ -123,19 +123,15 @@ def parse_results(values: list) -> list:
     return results
 
 def get_writer_name(name_str: str) -> str:
-    # name = name_str.split(' ')
+    name = name_str.split(' ')
     # for token in name:
     #     print(token)
-    # firstname = name[0].lower()
+    firstname = name[0].lower()
     # lastname = name[1] # TODO: some lastname missing on the sheet
     # fullname = (firstname, lastname)
 
     # TODO: this is a bug - need to populate sheets with lastname first 
     # then use fullname instead of firstname as the dict key
 
-    # return firstname
-    if name_str is None:
-        return ""
-    return name_str.lower()
-    
+    return firstname
 
