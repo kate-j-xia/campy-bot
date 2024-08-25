@@ -20,7 +20,6 @@ app = FastAPI()
 
 # This is slack token
 
-
 # app = Flask(__name__)
  
 def get_slack_client():

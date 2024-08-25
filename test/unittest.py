@@ -2,7 +2,7 @@ import httpx
 
 response_url = "https://hooks.slack.com/commands/T076DJA8HQE/7572736295831/ofF5DDrUcTIpVAadX9qHW2re"
 
-resp_url = "https://hooks.slack.com/services/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"
+resp_url = "https://hooks.slack.com/services/T0xxx"
 
 response_text = "After processing, grading DONE" # "This is the delayed response after 10 seconds."
 
