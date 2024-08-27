@@ -12,6 +12,7 @@ import aiohttp
 
 from googlesheets.theeds import grade
 import slacks.api as slackAPI
+import config
 
 CHANNEL_ID_CAMPY = "#campy"
 COMMAND_CAMPY = "/campy"
@@ -19,6 +20,8 @@ COMMAND_CAMPY = "/campy"
 app = FastAPI()
 
 # This is slack token
+SLACK_CLIENT_TOKEN = config.slack_client_token
+# SLACK_SIGNING_SECRET = config.slack_signing_secret
 
 # app = Flask(__name__)
  
@@ -27,8 +30,8 @@ def get_slack_client():
     ssl_context.check_hostname = False
     ssl_context.verify_mode = ssl.CERT_NONE
 
-    client = slack.WebClient(token=SLACK_TOKEN, ssl=ssl_context)
-    # client = slack.WebClient(token=SLACK_TOKEN)
+    client = slack.WebClient(token=SLACK_CLIENT_TOKEN, ssl=ssl_context)
+    # client = slack.WebClient(token=SLACK_CLIENT_TOKEN)
     client.chat_postMessage(channel=CHANNEL_ID_CAMPY,text='Hello your bot here, what can I do for you?')    
     
     return client
