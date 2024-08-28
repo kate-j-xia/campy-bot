@@ -3,6 +3,7 @@
 credentials.json
 key.json
 token.json
+config.py
 
 main.py
 
