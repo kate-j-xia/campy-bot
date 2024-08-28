@@ -2,6 +2,8 @@ import os.path
 
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
+import numpy as np
+import pandas as pd
 
 
 from .gauth import authenticate
@@ -48,8 +50,14 @@ def get_sheet_values(sheet_id: str, range_name: str) -> list:
             print("No data found.")
             return
 
-        print(f"get_sheet_values(): got {len(values)} rows")
-        return values
+        # Googlesheets will omit empty cells
+        df = pd.DataFrame(values)
+        df_replace = df.replace([''], [None])
+
+        # convert back to list with empty cells 
+        results = df_replace.values.tolist()
+        print(f"get_sheet_values(): got {len(results)} rows")
+        return results
 
     except HttpError as err:
         print(err)
@@ -123,15 +131,19 @@ def parse_results(values: list) -> list:
     return results
 
 def get_writer_name(name_str: str) -> str:
-    name = name_str.split(' ')
+    if name_str is None:
+        return ""
+    return name_str.lower()
+
+    # name = name_str.split(' ')
     # for token in name:
     #     print(token)
-    firstname = name[0].lower()
+    # firstname = name[0].lower()
     # lastname = name[1] # TODO: some lastname missing on the sheet
     # fullname = (firstname, lastname)
 
     # TODO: this is a bug - need to populate sheets with lastname first 
     # then use fullname instead of firstname as the dict key
 
-    return firstname
+    # return firstname
 

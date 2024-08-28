@@ -16,7 +16,6 @@ GRADES_RANGE_NAME = "A4:L"
 GRADES_UPDATE_RANGE_NAME = "E4:F"
 
 COMPLETION_SHEET_ID = "14Uo9HBfeEo-j7kzHLQ3NDRsjKyshA_EcfhX2S4GKRBM" 
-
 COMPLETION_RANGE_NAME = "C2:I"
 COMPLETION_COL_START = 2
 COMPLETION_COL_END = 7
@@ -24,42 +23,50 @@ COMPLETION_MAX_NUM = 5
 
 UPLOADS_SHEET_ID = "1-nkn_oOwenidq_dHRcgW5Ic_G5_zcei668oG5TCmVFE"
 UPLOADS_RANGE_NAME = "Online Uploads!C2:I"
-# UPLOADS_RANGE_NAMES = ["Online Uploads!C2:D", "Online Uploads!E2:I"]
 UPLOADS_COL_START = 2
 UPLOADS_COL_END = 6
 UPLOADS_MAX_NUM = 5
 
-def parse_completions(grades: dict, values: list):
+ASSIGNMENTS_SHEET_ID = "1-nkn_oOwenidq_dHRcgW5Ic_G5_zcei668oG5TCmVFE"
+STORY_RANGE_NAME = "Story Assignments!A2:H"
+STORY_COL_START = 2
+STORY_COL_END = 6
+STORY_MAX_NUM = 5
+
+ART_RANGE_NAME = "Art Assignments!A2:I"
+SOCIAL_MEDIA_RANGE_NAME = "Social Media!A2:I"
+
+STATUS_INCOMPLETE = "Incomplete"
+STATUS_COMPLETE = "Complete"
+
+def update_incompletes(assignments: dict, writer: str, value: str):
+    if writer not in assignments:
+        assignments[writer] = []
+
+    assignments[writer].append(value)
+
+    
+def parse_story_assignments(assignments: dict, values: list):
     if not values:
         return {}
     
-    print(f'Writer, Seed, 5 Story Ideas, 5 Sources, Outline, Rough Draft, Final Draft')    
-    for row in values:
-        print(f'parse_completions(): {row}')
-        total = 0
-        if row and row[0].lower() != 'writer'.lower():
-            name_key = utils.get_writer_name(row[0])
-            g = grades.get(name_key)
-            print(f'parse_completions(): {g}')
-            if not g:
-                continue
+    # print(f'Writer, Incomplete Assignments')    
+    for row in values:        
+        if row and row[2].lower() != 'writer':
+            # print(f'parse_story_assignments(): {row}')
+            writer = utils.get_writer_name(row[2])
+            story_name = row[1]
+            status = row[5]
+            if status != STATUS_COMPLETE:
+                update_incompletes(assignments, writer, story_name + " is " + status)
+                # print(f'parse_story_assignments(): {assignments[writer]}')
             
-            # completions = itertools.islice(row, COMPLETION_COL_START, COMPLETION_COL_END)
-            completions = row[COMPLETION_COL_START:COMPLETION_COL_END]
-            print(f'parse_completions(): {completions}')
-            for key, value in zip(const.COMPLETION_ITEMS, completions):
-                # print(f'parse_completions(): {key}, {value}, {Completion_points[key]}')
-                if value == const.COMPLETION_STATUS_COMPLETE:                    
-                    setattr(g, key, const.Completion_points[key])
-                    total += const.Completion_points[key]
-                
-            g.total = total
-            g.grade = g.total / const.POINTS_MAX * 100
-            print(f'parse_completions(): {g}')
 
-    print(f'parse_completions(): Got {len(grades)} items DONE')
+    print(f'parse_story_assignments(): incomplete assignments = {assignments}')
 
-def parse_uploads(grades: dict, values: list):
+    print(f'parse_story_assignments(): Got {len(assignments)} incompleted assignments.')
+
+def parse_social_media(grades: dict, values: list):
     if not values:
         return {}
     
@@ -83,7 +90,7 @@ def parse_uploads(grades: dict, values: list):
             
             print(f'parse_uploads(): {g}') 
 
-def parse_grades(values: list) -> dict:
+def parse_art_assignments(values: list) -> dict:
     if not values:
         return {}
     
@@ -125,32 +132,26 @@ def update_grades(sheet_id: str, writers: list, grades: dict):
     except HttpError as error:
         print(f"An error occurred in update_grades(): {error}")
         return error
+    
 
-def do_grading():
+def get_incompleted() -> dict:
     """
-        Give grades based on status on production sheets
+        Get incompleted assignments on production sheets
     """
     try:
-        writers = utils.get_sheet_values(GRADES_SHEET_ID, GRADES_RANGE_NAME)
-        if not writers: 
-            print('grade(): failed to grade - NO writers')
-            return {}
-        grades = parse_grades(writers)
-        completions = utils.get_sheet_values(COMPLETION_SHEET_ID, COMPLETION_RANGE_NAME)
-        parse_completions(grades, completions)
-        uploads = utils.get_sheet_values(UPLOADS_SHEET_ID, UPLOADS_RANGE_NAME)
-        parse_uploads(grades, uploads)
-        print(f'grade(): got {len(grades)} grades, updating...')
-        grades = update_grades(GRADES_SHEET_ID, writers, grades)
-        # for g in grades.values():
-        #     print(f'{g}')
-        # return 'OK'
-        return grades
+        assignments = {}
+        parse_story_assignments(assignments, utils.get_sheet_values(ASSIGNMENTS_SHEET_ID, STORY_RANGE_NAME))
+                                    
+        # parse_art_assignments(assignments, utils.get_sheet_values(UPLOADS_SHEET_ID, ART_RANGE_NAME))
+
+        # parse_social_media(assignments, utils.get_sheet_values(UPLOADS_SHEET_ID, SOCIAL_MEDIA_RANGE_NAME))
+        print(f'notify(): got {len(assignments)} incomplete assignments...')
+
+        return assignments
     
     except HttpError as err:
         print(err)
         return [err]
 
-if __name__ == "__main__":
-    grade()
+
 
