@@ -1,7 +1,8 @@
 from .constants import POINTS_MAX
 
 class Production:
-    def __init__(self, firstname, lastname=None):
+    def __init__(self, username, firstname=None, lastname=None):
+        self.username = username
         self.firstname = firstname
         self.lastname = lastname        
 
@@ -29,7 +30,7 @@ class Production:
         self.upload_list = []
 
     def __str__(self) -> str:
-        return f'{self.firstname} {self.lastname}: uploads={self.uploads}, uploaded={self.uploaded} \
+        return f'{self.username} ({self.firstname} {self.lastname}): uploads={self.uploads}, uploaded={self.uploaded} \
             story_ideas={self.story_ideas}, sources={self.sources}, outline={self.outline}, \
             first_draft={self.first_draft}, final_draft={self.final_draft} \
             total={self.total}, grade={self.grade}'

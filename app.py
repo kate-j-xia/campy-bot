@@ -1,12 +1,10 @@
 # from flask import Flask
-from fastapi import FastAPI, Request, Response, BackgroundTasks
+from fastapi import FastAPI, Request, BackgroundTasks
 import uvicorn
 import time
 import ssl
 from slack import WebClient
 import requests
-import asyncio
-import aiohttp
 
 # from slackeventsapi import SlackEventAdapter
 
@@ -23,11 +21,9 @@ SUB_COMMAND_GRADE = "grade"
 
 app = FastAPI()
 
-# This is slack token
+# Slack access token
 SLACK_CLIENT_TOKEN = config.slack_client_token
 # SLACK_SIGNING_SECRET = config.slack_signing_secret
-
-# app = Flask(__name__)
  
 def get_slack_client():
     ssl_context = ssl.create_default_context()
