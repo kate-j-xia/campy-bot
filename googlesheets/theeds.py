@@ -155,5 +155,5 @@ def do_grading():
         return [err]
 
 if __name__ == "__main__":
-    grade()
+    do_grading()
 

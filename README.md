@@ -18,18 +18,22 @@ To use the Campy Slack Bot, follow these steps:
 - Install (latest) Python 3.12, if not yet
 
 - Create Python Virtual env:
+
 `python3 -m venv venv`
 `source ./venv/bin/activate`
 `cd venv`
 
 - Clone the repository:
+
 `git clone https://github.com/kate-j-xia/campy-bot.git`
 
 
 - Navigate to the project directory:
+
 `cd campy-bot`
 
 - Install the dependencies:
+
 `npm install -r requirements.txt`
 
 (NOTE, you might need to adjust the requirements.txt file to accommodate your env)
@@ -40,13 +44,19 @@ To use the Campy Slack Bot, follow these steps:
 - Create the necessary Google Spreadsheets, eg. Completions, etc.
 - Make sure the Google sheets are filled with correct columns and values
 - Prepare configuration/env variables:
-update config.py: `slack_client_token = <Your slack client TOKEN>`
 
+1. update config.py: `slack_client_token = <Your slack client TOKEN>`
+2. copy `key.json` file to `/campy-bot` directory
 
 ## Usage
 
 Use following commands:
-- `/campy notify` to notify users
+- `/campy`: to display the help text"
+- `/campy notify <number 1 - 5>` to notify users of incompleted assignments
+    where _number_ is optional
+    0 or empty - all incompeleted assignments
+    1 - story ideas; 2 - sources; 3 - outlines; 4 - first draft; 5 - final draft
+    eg. `/campy notify 2` will notify all incmpleted *sources*
 - `/campy grade` to start grading
 
 
@@ -65,6 +75,3 @@ Contributions are welcome! If you would like to contribute to this project, plea
 - rebuild/restart the project from `main` 
 - verify the changes are effective on the site and on Slack channels
 
-
-## License
-MIT License

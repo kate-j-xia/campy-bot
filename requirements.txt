@@ -1,4 +1,10 @@
-fastapi==0.63.0
-slackclient==2.9.4
-google-api-python-client==2.129.0
-google-auth-oauthlib==1.2.0
+fastapi>=0.63.0
+uvicorn>=0.29.0
+
+slackclient>=2.9.4
+google-api-python-client>=2.129.0
+google-auth-oauthlib>=1.2.0
+
+numpy>=2.1.0
+pandas>=2.2.2
+

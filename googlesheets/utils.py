@@ -35,7 +35,6 @@ def get_sheet_values(sheet_id: str, range_name: str) -> list:
             .execute()
         )
         values = result.get("values", [])
-
         if not values:
             print("No data found.")
             return
@@ -46,6 +45,7 @@ def get_sheet_values(sheet_id: str, range_name: str) -> list:
 
         # convert back to list with empty cells 
         results = df_replace.values.tolist()
+        # print(f'get_sheet_values(): {results}')
         print(f"get_sheet_values(): got {len(results)} rows")
         return results
 

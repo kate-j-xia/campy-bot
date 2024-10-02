@@ -1,8 +1,8 @@
 # from flask import Flask
-from fastapi import FastAPI, Request, BackgroundTasks
+from fastapi import FastAPI, Request, BackgroundTasks, HTTPException, status
 import uvicorn
 import time
-import ssl
+
 from slack import WebClient
 import requests
 
@@ -11,7 +11,6 @@ import requests
 from googlesheets.theeds import do_grading
 from googlesheets.notification import get_incompleted
 import slacks.api as slackAPI
-import config
 
 CHANNEL_ID_CAMPY = "#campy"
 COMMAND_CAMPY = "/campy"
@@ -20,22 +19,6 @@ SUB_COMMAND_NOTIFY = "notify"
 SUB_COMMAND_GRADE = "grade"
 
 app = FastAPI()
-
-# Slack access token
-SLACK_CLIENT_TOKEN = config.slack_client_token
-# SLACK_SIGNING_SECRET = config.slack_signing_secret
- 
-def get_slack_client():
-    ssl_context = ssl.create_default_context()
-    ssl_context.check_hostname = False
-    ssl_context.verify_mode = ssl.CERT_NONE
-
-    client = WebClient(token=SLACK_CLIENT_TOKEN, ssl=ssl_context)
-    # client = slack.WebClient(token=SLACK_CLIENT_TOKEN)
-    # client.chat_postMessage(channel=CHANNEL_ID_CAMPY,text='Hello your bot here, what can I do for you?')    
-    
-    return client
-    # slack_event_adapter = SlackEventAdapter(SIGNING_SECRET, '/slack/events', app)
 
 def gen_results(response_url: str, response_text: str):
     print(f'gen_results(): waiting for grading...')
@@ -50,7 +33,7 @@ def gen_results(response_url: str, response_text: str):
     
     if not grades:
         # slack_client.chat_postMessage(channel='#campy', text=f'Getting grades...!')
-        print(f"gradeing failed...")
+        print(f"grading failed...")
     else:
         # slack_client.chat_postMessage(channel='#campy', text=f'Calculated some grades: DONE!')    
         print(f'gen_results(): DONE grading...{(time.time() - start_time)})')
@@ -80,8 +63,8 @@ def launch_task(background_tasks: BackgroundTasks, param1: str, param2: str):
 # @app.route('/productions', methods = ['GET', 'POST'])
 @app.get("/productions")
 async def production_status(request: Request):
-    slack_client = get_slack_client()
-    print("Getting production status: ")
+    slack_client = slackAPI.get_slack_client()
+    print("Getting production status... ")
        
     # grades = await grade()
     # await grade()
@@ -102,74 +85,101 @@ def grade(client: WebClient, response_url: str, background_tasks: BackgroundTask
             channel=CHANNEL_ID_CAMPY,
             text="Your request is being processed. You will receive a response shortly."
         )
-
         ack_response = "Processing your request. This might take a few seconds..."
         
         # Send delayed response
-        response_text = "After processing, production status checked, grading DONE" # "This is the delayed response after 10 seconds."
+        response_text = "After processing, production status checked, grading DONE"
         launch_task(background_tasks, response_url, response_text)
 
         return ack_response
     
-        # slack_client.chat_postMessage(
-        #     channel=channel_id,
-        #     text=response_text
-        # )
-        # slack_client.chat_postMessage(channel=CHANNEL_ID_CAMPY, text=f'Hey <@U076YT1E28Z> Calculated some grades: DONE!')
-        # slack_client.chat_postMessage(channel=CHANNEL_ID_CAMPY, text=f'Hi <!channel> Calculated some grades: All DONE!')
-
-        # return {"message": "production status checked, grading DONE"}
-
 def send_reminder(client: WebClient, assignments: dict, users: dict):
+    mesg = ""
     for writer, tasks in assignments.items():
         user_id = slackAPI.get_id_by_name(users, writer)
         if user_id is not None:
-            mesg = f'Hey <@{user_id}>, a friendly reminder that your'
+            mesg = mesg + f'Hey <@{user_id}>, a friendly reminder that you still have'
             for task in tasks:
                 mesg += " " + task 
-            print(f'send_reminder(): assignment = {mesg}')
-            
-            client.chat_postMessage(channel=CHANNEL_ID_CAMPY, text=f'{mesg}.')
+            mesg = mesg + " incomplete.\n"
+    if mesg is None or len(mesg) <= 0:   
+        mesg = "There are no incompleted assignments."   
+    # print(f'send_reminder(): mesg = {mesg}')      
+    client.chat_postMessage(channel=CHANNEL_ID_CAMPY, text=f'{mesg}')
+   
 
-def notify(client: WebClient, users):
-    assignments = get_incompleted()
-    send_reminder(client, assignments, users)
+def notify(client: WebClient, users, commands):
+    incompletes = get_incompleted(commands)
+    if incompletes is None:
+        header = "Hi there, please select a correct option. \nUsage: \n"
+        display_help(client, header)
+        return
+    # print(f'notify(): send following reminders - {incompletes}')
+    send_reminder(client, incompletes, users)
+
+def display_help(slack_client: WebClient, header=None):
+    if header is None or header == "":
+        header = "Hi there, campy is a tool that manages production cycle. \nUsage: \n"
+    help_text =  header + \
+            "* `/campy notify <number>`: Notifies writers of incomplete assignemnts, \n" + \
+            "          where _number_ is optional: \n" \
+            "          0 or empty - all incompeleted assignments \n" \
+            "          1 - story ideas; 2 - sources; 3 - outlines; 4 - first draft; 5 - final draft\n" \
+            "          eg. `/campy notify 2` will notify all incmpleted *sources*\n" \
+            "* `/campy grade`: Does grading for writers work\n" + \
+            "* `/campy`: Displays this help text"
+    slack_client.chat_postMessage(channel=CHANNEL_ID_CAMPY, 
+                                  text=f'{help_text}')
+
+def process_commands(slack_client: WebClient, text: str) -> list:
+    if text is None or text == "":
+        # print("process_commands(): no sub_command, show Help")
+        display_help(slack_client)
+        return 
+    
+    sub_commands = text.lower().split()
+    print(f'process_commands(): {sub_commands}')
+    return sub_commands
 
 @app.post("/productions")
 async def production_status(request: Request, background_tasks: BackgroundTasks):
-    slack_client = get_slack_client()
-    print("production_status(): Got a campy request... ")
-       
-    users = slackAPI.get_users(slack_client)
-    
-    # headers = request.headers
-    # print(f'production_status(): headers = {headers}')
-    data = await request.form()
-    
-    print(f'production_status(): formData = {data}')
-    if data is not None and data.get('command') == COMMAND_CAMPY:        
-        text = data.get('text')
-        response_url = data.get('response_url')
-        user_id = data.get('user_id')
-        channel_id = data.get('channel_id')
-        print(f'production_status(): command = {text} in channel {channel_id}')
-        if text is None or text == "":
-            print("production_status(): no sub_command, show Help")
-            help_text = "Campy is a bot that manages production cycle: \n\n" + \
-                        "* `/campy notify`: Notifies writers of incomplete assignemnts\n" + \
-                        "* `/campy grade`: Does grading for writers work\n" + \
-                        "* `/campy`: Displays this help text"
-            slack_client.chat_postMessage(channel=CHANNEL_ID_CAMPY, 
-                                            text=f'{help_text}')
-        sub_command = text.lower()
-        if sub_command == SUB_COMMAND_NOTIFY:
-            print(f'production_status(): notify...')
-            notify(slack_client, users)
-        elif sub_command == SUB_COMMAND_GRADE:
-            print(f'production_status(): grading...')
-            grade(slack_client, response_url, background_tasks)
-   
-    # slack_client.chat_postMessage(channel=CHANNEL_ID_CAMPY, text=f'Enjoy!')
+    try:
+        slack_client = slackAPI.get_slack_client()
+        print("production_status(): Got a campy request... ")
+        
+        users = slackAPI.get_users(slack_client)
+        
+        # headers = request.headers
+        # print(f'production_status(): headers = {headers}')
+        data = await request.form()
+        
+        print(f'production_status(): formData = {data}')
+        if data is not None and data.get('command') == COMMAND_CAMPY:        
+            text = data.get('text')
+            response_url = data.get('response_url')
+            # user_id = data.get('user_id')
+            channel_id = data.get('channel_id')
+            print(f'production_status(): command = {text} in channel {channel_id}')
+            sub_commands = process_commands(slack_client, text)
+            if sub_commands is None or len(sub_commands) == 0:
+                return
+            if sub_commands[0] == SUB_COMMAND_NOTIFY:
+                print(f'production_status(): notify... {sub_commands}')
+                notify(slack_client, users, sub_commands)
+            elif sub_commands[0] == SUB_COMMAND_GRADE:
+                print(f'production_status(): grading...')
+                grade(slack_client, response_url, background_tasks)
+    except HTTPException as exc:
+        print(f'production_status(): HTTPException - {exc.status_code} {exc.detail}')
+        # slack_client.chat_postMessage(channel=CHANNEL_ID_CAMPY, 
+        #                              text=f'Something wrong happened on Slack, please contact admin.')
+        raise exc
+    except Exception as e:        
+        print(f"production_status(): ERROR - {e.response['error']}")
+        slack_client.chat_postMessage(channel=CHANNEL_ID_CAMPY, 
+                                      text=f'*_There is some problem on the server, please retry later._*')
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
+                            detail="Internal Server Error")
         
 
 @app.get("/")
