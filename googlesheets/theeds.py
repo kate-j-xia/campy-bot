@@ -1,12 +1,12 @@
-import os.path
+# import os.path
 
 # import asyncio
-from googleapiclient.discovery import build
+# from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
-from tokenize import tokenize
+# from tokenize import tokenize
 import itertools
 
-from .gauth import authenticate
+# from .gauth import authenticate
 from .production import Production
 from . import utils
 from . import constants as const
@@ -93,12 +93,13 @@ def parse_grades(values: list) -> dict:
         if row and row[0].lower() != 'writer'.lower():
             lastname = row[0].lower()
             firstname = row[1].lower()     
-            p = Production(firstname, lastname)
+            writer = utils.get_writer_name(row[2])
+            p = Production(writer)
 
             # print(f'parse_grades(): {p}')
 
             # TODO: change key to fullname after fixing the sheets
-            results[firstname] = p
+            results[writer] = p
         
     print(f'parse_grades(): Got {len(results)} grades DONE')
     
@@ -115,8 +116,10 @@ def update_grades(sheet_id: str, writers: list, grades: dict):
             if row and row[0].lower() != 'writer'.lower():
                 lastname = row[0].lower()
                 firstname = row[1].lower() 
+                writer = utils.get_writer_name(row[2])
                 # TODO: use fullname as the key  
-                g = grades.get(firstname)    
+                # g = grades.get(firstname)    
+                g = grades.get(writer)
                 range = f'E{index}:F{index}'
                 values = [[g.grade, g.total]]                
 
@@ -152,5 +155,5 @@ def do_grading():
         return [err]
 
 if __name__ == "__main__":
-    grade()
+    do_grading()
 

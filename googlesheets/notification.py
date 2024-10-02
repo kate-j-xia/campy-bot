@@ -12,8 +12,18 @@ from . import utils
 from . import constants as const
 
 GRADES_SHEET_ID = "18Eeer2gG0OCfR9LwxlFhiXLE2kyLXTMMTvse3SUiaYo"
-GRADES_RANGE_NAME = "A4:L"
-GRADES_UPDATE_RANGE_NAME = "E4:F"
+GRADES_RANGE_NAME = "A4:M"
+GRADES_NOTIFY_RANGE_NAME = "H4:M"
+GRADES_BASE_COLUMN = 6
+GRADES_INCOMP_COL_START = 1
+GRADES_INCOMP_COL_END = 5
+
+SEED_SHEET_ID = "1Gyuh0IaMBrzfruZvKXVEH2KCS8sW-49VAn8QYWpxQ-w"
+SEED_RANGE_NAME = "A2:I"
+SEED_NOTIFY_RANGE_NAME = "E2:I"
+SEED_BASE_COLUMN = 3
+SEED_INCOMP_COL_START = 1
+SEED_INCOMP_COL_END = 5
 
 COMPLETION_SHEET_ID = "14Uo9HBfeEo-j7kzHLQ3NDRsjKyshA_EcfhX2S4GKRBM" 
 COMPLETION_RANGE_NAME = "C2:I"
@@ -39,20 +49,43 @@ SOCIAL_MEDIA_RANGE_NAME = "Social Media!A2:I"
 STATUS_INCOMPLETE = "Incomplete"
 STATUS_COMPLETE = "Complete"
 
-def update_incompletes(assignments: dict, writer: str, value: str):
-    if writer not in assignments:
-        assignments[writer] = []
+GRADES_BASE_COLUMN = 6
 
-    assignments[writer].append(value)
+def update_incompletes(incompletes: dict, writer: str, value: str):
+    if writer not in incompletes:
+        incompletes[writer] = []
 
+    incompletes[writer].append(value)
     
+def check_seed_incompletes(incompletes: dict, values: list, which_column=0):
+    if not values:
+        return {}
+    
+    print(f'check_seed_incompletes(): requested for column {which_column}...')    
+    for row in values:        
+        if row and row[2] and row[2].lower() != 'writer':
+            # print(f'check_incompletes(): {row}')
+            writer = utils.get_writer_name(row[2])
+            # column_name = const.Incompletes(which_column).name
+            # status = int(row[SEED_BASE_COLUMN + which_column])           
+            column_name = row[0]
+            if row[1]:
+                column_name += " " + row[1]            
+            status = row[SEED_BASE_COLUMN + which_column]
+            if status != STATUS_COMPLETE:
+            # if status <= 0:
+                update_incompletes(incompletes, writer, column_name)
+                # print(f'check_incompletes(): {incompletes[writer]}')
+    # print(f'check_seed_incompletes(): incomplete assignments = {incompletes}')
+    print(f'check_seed_incompletes(): Got {len(incompletes)} incompleted assignments.')
+
 def parse_story_assignments(assignments: dict, values: list):
     if not values:
         return {}
     
     # print(f'Writer, Incomplete Assignments')    
     for row in values:        
-        if row and row[2].lower() != 'writer':
+        if row and row[2] and row[2].lower() != 'writer':
             # print(f'parse_story_assignments(): {row}')
             writer = utils.get_writer_name(row[2])
             story_name = row[1]
@@ -60,35 +93,8 @@ def parse_story_assignments(assignments: dict, values: list):
             if status != STATUS_COMPLETE:
                 update_incompletes(assignments, writer, story_name + " is " + status)
                 # print(f'parse_story_assignments(): {assignments[writer]}')
-            
-
-    print(f'parse_story_assignments(): incomplete assignments = {assignments}')
-
+    # print(f'parse_story_assignments(): incomplete assignments = {assignments}')
     print(f'parse_story_assignments(): Got {len(assignments)} incompleted assignments.')
-
-def parse_social_media(grades: dict, values: list):
-    if not values:
-        return {}
-    
-    print(f'Writer  Showcase?  Category: Graphic/Credits 3 Tags/Hyperlinks If Photo -> Full Immersive')
-    for row in values:
-        if row and row[0].lower() != 'writer'.lower():
-            name_key = utils.get_writer_name(row[0])
-            g = grades.get(name_key)
-            if not g:
-                continue
-            
-            for u in itertools.islice(row, UPLOADS_COL_START, UPLOADS_COL_END):
-                if u == 'TRUE':
-                    g.uploads += 1
-                
-            # if all pieces are uploaded, can earn the upload points
-            if g.uploads >= UPLOADS_MAX_NUM:
-                g.uploaded += const.POINTS_UPLOADED
-                g.total += const.POINTS_UPLOADED
-                g.grade = g.total / const.POINTS_MAX * 100
-            
-            print(f'parse_uploads(): {g}') 
 
 def parse_art_assignments(values: list) -> dict:
     if not values:
@@ -97,57 +103,43 @@ def parse_art_assignments(values: list) -> dict:
     results = {}
     print(f'Writer  Grade  Total ')
     for row in values:
-        if row and row[0].lower() != 'writer'.lower():
+        if row and row[0] and row[0].lower() != 'writer':
             lastname = row[0].lower()
             firstname = row[1].lower()     
             p = Production(firstname, lastname)
-
             # print(f'parse_grades(): {p}')
-
             # TODO: change key to fullname after fixing the sheets
             results[firstname] = p
         
-    print(f'parse_grades(): Got {len(results)} grades DONE')
-    
+    print(f'parse_grades(): Got {len(results)} grades DONE')    
     return results
 
-def update_grades(sheet_id: str, writers: list, grades: dict):
-    """
-        Updates writers grades on the grade sheet
-    """  
-    try:        
-        index = const.GRADES_UPDATE_STARTING_ROW  # data starts at row 4
-        for row in writers:
-            index += 1
-            if row and row[0].lower() != 'writer'.lower():
-                lastname = row[0].lower()
-                firstname = row[1].lower() 
-                # TODO: use fullname as the key  
-                g = grades.get(firstname)    
-                range = f'E{index}:F{index}'
-                values = [[g.grade, g.total]]                
-
-                utils.update_values(sheet_id, range, "USER_ENTERED", values)        
-                print(f'update_grades(): range = {range}, grade = {values}')  
-    except HttpError as error:
-        print(f"An error occurred in update_grades(): {error}")
-        return error
-    
-
-def get_incompleted() -> dict:
+def get_incompleted(commands):
     """
         Get incompleted assignments on production sheets
     """
     try:
-        assignments = {}
-        parse_story_assignments(assignments, utils.get_sheet_values(ASSIGNMENTS_SHEET_ID, STORY_RANGE_NAME))
-                                    
-        # parse_art_assignments(assignments, utils.get_sheet_values(UPLOADS_SHEET_ID, ART_RANGE_NAME))
+        incompletes = {}
+        # assignments = utils.get_sheet_values(GRADES_SHEET_ID, GRADES_RANGE_NAME)
+        assignments = utils.get_sheet_values(SEED_SHEET_ID, SEED_RANGE_NAME)
+        # parse_story_assignments(incompletes, utils.get_sheet_values(ASSIGNMENTS_SHEET_ID, STORY_RANGE_NAME))                                    
+        # parse_art_assignments(incompletes, utils.get_sheet_values(UPLOADS_SHEET_ID, ART_RANGE_NAME))
+        # parse_social_media(incompletes, utils.get_sheet_values(UPLOADS_SHEET_ID, SOCIAL_MEDIA_RANGE_NAME))
+        if len(commands) > 1:
+            which_column = int(commands[1])            
+            print(f'get_incompleted(): get column {which_column} incompletes only.')
+            if which_column < SEED_INCOMP_COL_START or which_column > SEED_INCOMP_COL_END:
+                print(f'get_incompleted(): invalid column for SEED sheet - {which_column}')
+                return None
+            check_seed_incompletes(incompletes, assignments, which_column)
+        else: # check for all assignments
+            for inc in const.Incompletes:
+                print(f'get_incompleted(): {inc}')
+                check_seed_incompletes(incompletes, assignments, inc.value)
 
-        # parse_social_media(assignments, utils.get_sheet_values(UPLOADS_SHEET_ID, SOCIAL_MEDIA_RANGE_NAME))
-        print(f'notify(): got {len(assignments)} incomplete assignments...')
+        print(f'get_incompleted(): got total {len(incompletes)} incompleted assignments...')
 
-        return assignments
+        return incompletes
     
     except HttpError as err:
         print(err)

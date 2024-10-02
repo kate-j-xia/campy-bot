@@ -1,9 +1,12 @@
 *.pyc
+.gcloudignore
 
 credentials.json
-key.json
 token.json
+
+key.json
 config.py
 
-main.py
+app.old
+main.old
 

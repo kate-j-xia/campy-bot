@@ -25,5 +25,3 @@ with httpx.Client() as client:
     # except httpx.HTTPStatusError:
     #     print("Error response")
 
-
-

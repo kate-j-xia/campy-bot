@@ -1,20 +1,10 @@
-import os.path
-
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 import numpy as np
 import pandas as pd
 
-
 from .gauth import authenticate
 from .production import Production
-
-# The ID and range of a sample spreadsheet.
-# SAMPLE_SHEET_ID = "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms"
-SAMPLE_SHEET_ID = "1JySq2yNhRSty-aoUlmAHtheMAyOewLPC8OhhvCUJ6bw"
-#SAMPLE_RANGE_NAME = "Class Data!A2:E"
-SAMPLE_RANGE_NAME = "2024!A2:G"
-
 
 def get_sheet():  
     """
@@ -45,7 +35,6 @@ def get_sheet_values(sheet_id: str, range_name: str) -> list:
             .execute()
         )
         values = result.get("values", [])
-
         if not values:
             print("No data found.")
             return
@@ -56,6 +45,7 @@ def get_sheet_values(sheet_id: str, range_name: str) -> list:
 
         # convert back to list with empty cells 
         results = df_replace.values.tolist()
+        # print(f'get_sheet_values(): {results}')
         print(f"get_sheet_values(): got {len(results)} rows")
         return results
 
