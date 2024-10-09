@@ -1,6 +1,6 @@
-# Campy Slack Bot
+# The Campanile Slack Bot
 
-A Slack bot for Journalism Production Cycle Management
+A Slack bot for The Campanile's Cycle Management
 
 
 ## Introduction
