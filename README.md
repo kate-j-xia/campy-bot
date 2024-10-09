@@ -34,7 +34,7 @@ To use the Campy Slack Bot, follow these steps:
 
 - Install the dependencies:
 
-`npm install -r requirements.txt`
+`pip install -r requirements.txt`
 
 (NOTE, you might need to adjust the requirements.txt file to accommodate your env)
 
