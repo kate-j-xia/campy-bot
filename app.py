@@ -100,8 +100,8 @@ def send_reminder(client: WebClient, assignments: dict, users: dict):
         if user_id is not None:
             mesg = mesg + f'Hey <@{user_id}>, a friendly reminder that you still have'
             for task in tasks:
-                mesg += " " + task 
-            mesg = mesg + " incomplete.\n"
+                mesg += task 
+            mesg = mesg + ".\n"
     if mesg is None or len(mesg) <= 0:   
         mesg = "There are no incompleted assignments."   
     # print(f'send_reminder(): mesg = {mesg}')      
@@ -175,7 +175,7 @@ async def production_status(request: Request, background_tasks: BackgroundTasks)
         #                              text=f'Something wrong happened on Slack, please contact admin.')
         raise exc
     except Exception as e:        
-        print(f"production_status(): ERROR - {e.response['error']}")
+        print(f"production_status(): ERROR - {e}")
         slack_client.chat_postMessage(channel=CHANNEL_ID_CAMPY, 
                                       text=f'*_There is some problem on the server, please retry later._*')
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 

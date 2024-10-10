@@ -5,13 +5,15 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from tokenize import tokenize
 import itertools
+from pathlib import Path
 
 from .gauth import authenticate
 from .production import Production
 from . import utils
 from . import constants as const
+import config
 
-GRADES_SHEET_ID = "18Eeer2gG0OCfR9LwxlFhiXLE2kyLXTMMTvse3SUiaYo"
+""" GRADES_SHEET_ID = "18Eeer2gG0OCfR9LwxlFhiXLE2kyLXTMMTvse3SUiaYo"
 GRADES_RANGE_NAME = "A4:M"
 GRADES_NOTIFY_RANGE_NAME = "H4:M"
 GRADES_BASE_COLUMN = 6
@@ -24,7 +26,7 @@ SEED_NOTIFY_RANGE_NAME = "E2:I"
 SEED_BASE_COLUMN = 3
 SEED_INCOMP_COL_START = 1
 SEED_INCOMP_COL_END = 5
-
+ """
 COMPLETION_SHEET_ID = "14Uo9HBfeEo-j7kzHLQ3NDRsjKyshA_EcfhX2S4GKRBM" 
 COMPLETION_RANGE_NAME = "C2:I"
 COMPLETION_COL_START = 2
@@ -51,30 +53,38 @@ STATUS_COMPLETE = "Complete"
 
 GRADES_BASE_COLUMN = 6
 
+def get_project_root() -> Path:
+    return Path(__file__).parent.parent
+
 def update_incompletes(incompletes: dict, writer: str, value: str):
     if writer not in incompletes:
         incompletes[writer] = []
+    else:
+        incompletes[writer].append(", ")
 
     incompletes[writer].append(value)
     
 def check_seed_incompletes(incompletes: dict, values: list, which_column=0):
-    if not values:
+    if not values: #  or which_column >= len(values):
         return {}
     
     print(f'check_seed_incompletes(): requested for column {which_column}...')    
     for row in values:        
         if row and row[2] and row[2].lower() != 'writer':
-            # print(f'check_incompletes(): {row}')
+            print(f'check_seed_incompletes(): {row}')
             writer = utils.get_writer_name(row[2])
             # column_name = const.Incompletes(which_column).name
             # status = int(row[SEED_BASE_COLUMN + which_column])           
-            column_name = row[0]
-            if row[1]:
+            column_name = row[0] # story category
+            if row[1] is not None: # story name
                 column_name += " " + row[1]            
-            status = row[SEED_BASE_COLUMN + which_column]
+            status = row[config.SEED_BASE_COLUMN + which_column]
             if status != STATUS_COMPLETE:
             # if status <= 0:
-                update_incompletes(incompletes, writer, column_name)
+                if status is None:
+                    status = STATUS_INCOMPLETE
+                update_incompletes(incompletes, writer, column_name + " in " + str(status))
+                
                 # print(f'check_incompletes(): {incompletes[writer]}')
     # print(f'check_seed_incompletes(): incomplete assignments = {incompletes}')
     print(f'check_seed_incompletes(): Got {len(incompletes)} incompleted assignments.')
@@ -121,20 +131,20 @@ def get_incompleted(commands):
     try:
         incompletes = {}
         # assignments = utils.get_sheet_values(GRADES_SHEET_ID, GRADES_RANGE_NAME)
-        assignments = utils.get_sheet_values(SEED_SHEET_ID, SEED_RANGE_NAME)
+        assignments = utils.get_sheet_values(config.SEED_SHEET_ID, config.SEED_RANGE_NAME)
         # parse_story_assignments(incompletes, utils.get_sheet_values(ASSIGNMENTS_SHEET_ID, STORY_RANGE_NAME))                                    
         # parse_art_assignments(incompletes, utils.get_sheet_values(UPLOADS_SHEET_ID, ART_RANGE_NAME))
         # parse_social_media(incompletes, utils.get_sheet_values(UPLOADS_SHEET_ID, SOCIAL_MEDIA_RANGE_NAME))
         if len(commands) > 1:
             which_column = int(commands[1])            
             print(f'get_incompleted(): get column {which_column} incompletes only.')
-            if which_column < SEED_INCOMP_COL_START or which_column > SEED_INCOMP_COL_END:
+            if which_column < config.SEED_INCOMP_COL_START or which_column > config.SEED_INCOMP_COL_END:
                 print(f'get_incompleted(): invalid column for SEED sheet - {which_column}')
                 return None
             check_seed_incompletes(incompletes, assignments, which_column)
         else: # check for all assignments
             for inc in const.Incompletes:
-                print(f'get_incompleted(): {inc}')
+                print(f'get_incompleted(): {inc.value}')
                 check_seed_incompletes(incompletes, assignments, inc.value)
 
         print(f'get_incompleted(): got total {len(incompletes)} incompleted assignments...')
