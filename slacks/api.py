@@ -28,7 +28,8 @@ def get_users(client: WebClient) -> {}:
         if userList:
             for user in userList:
                 # print(f"get_users(): User ID: {user['id']}, Name: {user['name']}")
-                usersByName[user['name']] = user['id']
+                name = user['profile']['first_name'].lower()
+                usersByName[name] = user['id']
                 # usersById[user['id']] = user['name']
         print(f'get_users(): {usersByName}')
         return usersByName # , usersById

@@ -12,7 +12,7 @@ from googlesheets.theeds import do_grading
 from googlesheets.notification import get_incompleted
 import slacks.api as slackAPI
 
-CHANNEL_ID_CAMPY = "#campy"
+CHANNEL_ID_CAMPY = "#test"
 COMMAND_CAMPY = "/campy"
 
 SUB_COMMAND_NOTIFY = "notify"
@@ -98,10 +98,10 @@ def send_reminder(client: WebClient, assignments: dict, users: dict):
     for writer, tasks in assignments.items():
         user_id = slackAPI.get_id_by_name(users, writer)
         if user_id is not None:
-            mesg = mesg + f'Hey <@{user_id}>, a friendly reminder that you still have'
+            mesg = mesg + f'Hey <@{user_id}>, reminder that your '
             for task in tasks:
                 mesg += task 
-            mesg = mesg + ".\n"
+            mesg = mesg + ". \nThis is past due, so please notify your Seed as soon as you complete this assignment.\n"
     if mesg is None or len(mesg) <= 0:   
         mesg = "There are no incompleted assignments."   
     # print(f'send_reminder(): mesg = {mesg}')      
@@ -119,15 +119,18 @@ def notify(client: WebClient, users, commands):
 
 def display_help(slack_client: WebClient, header=None):
     if header is None or header == "":
-        header = "Hi there, campy is a tool that manages production cycle. \nUsage: \n"
+        header = "Hi! Campybot is a tool to help manage the production cycle. \n"
     help_text =  header + \
-            "* `/campy notify <number>`: Notifies writers of incomplete assignemnts, \n" + \
-            "          where _number_ is optional: \n" \
-            "          0 or empty - all incompeleted assignments \n" \
-            "          1 - story ideas; 2 - sources; 3 - outlines; 4 - first draft; 5 - final draft\n" \
-            "          eg. `/campy notify 2` will notify all incmpleted *sources*\n" \
-            "* `/campy grade`: Does grading for writers work\n" + \
-            "* `/campy`: Displays this help text"
+            "`/campy notify <number>`: Notifies writers of incomplete assignemnts where <number> is:\n" \
+            "           0 or empty = all incompleted assignments \n" \
+            "           1 = story ideas \n" \
+            "           2 = sources \n" \
+            "           3 = outlines \n" \
+            "           4 = first draft \n" \
+            "           5 = final draft \n" \
+            "          eg. `/campy notify 2` will notify all incompleted *sources*\n" \
+            "`/campy grade`: Transfers grading from Seed spreadsheet\n" + \
+            "`/campy`: Displays help text"
     slack_client.chat_postMessage(channel=CHANNEL_ID_CAMPY, 
                                   text=f'{help_text}')
 

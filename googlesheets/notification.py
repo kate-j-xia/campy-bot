@@ -75,15 +75,15 @@ def check_seed_incompletes(incompletes: dict, values: list, which_column=0):
             writer = utils.get_writer_name(row[2])
             # column_name = const.Incompletes(which_column).name
             # status = int(row[SEED_BASE_COLUMN + which_column])           
-            column_name = row[0] # story category
+            column_name = const.NUMBER_TO_ASSIGNMENTS[which_column] + " for your " + row[0] # story category
             if row[1] is not None: # story name
-                column_name += " " + row[1]            
+                column_name += " story _" + row[1] + "_"           
             status = row[config.SEED_BASE_COLUMN + which_column]
             if status != STATUS_COMPLETE:
             # if status <= 0:
                 if status is None:
                     status = STATUS_INCOMPLETE
-                update_incompletes(incompletes, writer, column_name + " in " + str(status))
+                update_incompletes(incompletes, writer, column_name + " is " + str(status).lower())
                 
                 # print(f'check_incompletes(): {incompletes[writer]}')
     # print(f'check_seed_incompletes(): incomplete assignments = {incompletes}')

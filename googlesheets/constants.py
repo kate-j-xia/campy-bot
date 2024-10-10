@@ -34,3 +34,12 @@ class Incompletes(Enum):
     OUTLINE = 3
     FIRST_DRAFT = 4
     FINAL_DRAFT = 5
+
+NUMBER_TO_ASSIGNMENTS = {
+    # incompleted assignments to sheet column mapping
+    1: "5 story ideas",
+    2: "5 sources",
+    3: "outline",
+    4: "first draft",
+    5: "final draft"
+}
