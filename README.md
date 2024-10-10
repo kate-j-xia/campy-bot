@@ -45,19 +45,20 @@ To use the Campy Slack Bot, follow these steps:
 - Make sure the Google sheets are filled with correct columns and values
 - Prepare configuration/env variables:
 
-1. update config.py: `slack_client_token = <Your slack client TOKEN>`
-2. copy `key.json` file to `/campy-bot` directory
+  1. update config.py: `slack_client_token = <Your slack client TOKEN>`
+  2. copy `key.json` file to `campy-bot` directory
 
 ## Usage
 
 Use following commands:
-- `/campy`: to display the help text"
-- `/campy notify <number 1 - 5>` to notify users of incompleted assignments
-    where _number_ is optional
-    0 or empty - all incompeleted assignments
-    1 - story ideas; 2 - sources; 3 - outlines; 4 - first draft; 5 - final draft
-    eg. `/campy notify 2` will notify all incmpleted *sources*
-- `/campy grade` to start grading
+- `/campy`: display the help text
+- `/campy notify <number 1 - 5>`: notify users of incompleted assignments
+
+    where _number_ is optional \
+    0 or empty - all incompeleted assignments \
+    1 - story ideas; 2 - sources; 3 - outlines; 4 - first draft; 5 - final draft \
+    eg. `/campy notify 2` will notify all incmpleted *sources* \
+- `/campy grade`: grade
 
 
 ## Contributing

@@ -8,3 +8,8 @@ google-auth-oauthlib>=1.2.0
 numpy>=2.1.0
 pandas>=2.2.2
 
+requests
+chardet
+python-multipart
+
+

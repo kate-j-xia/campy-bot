@@ -1,9 +1,9 @@
 from slack import WebClient
 import ssl
-from . import config
+import config
 
 # Slack access token
-SLACK_CLIENT_TOKEN = config.slack_client_token
+SLACK_CLIENT_TOKEN = config.SLACK_CLIENT_TOKEN
 # SLACK_SIGNING_SECRET = config.slack_signing_secret
  
 def get_slack_client():
