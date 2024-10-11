@@ -53,8 +53,25 @@ pip install -r requirements.txt
 - Make sure the Google sheets are filled with correct columns and values
 - Prepare configuration/env variables:
 
-  1. update config.py: `slack_client_token = <Your slack client TOKEN>`
-  2. copy `key.json` file to `campy-bot` directory
+  1. copy and update config.py:
+     ```
+     SLACK_CLIENT_TOKEN = "<Your slack client TOKEN>"
+     SLACK_CHANNEL_ID = "#campy"
+     SLACK_COMMAND = "/campy"
+  
+     GRADES_SHEET_ID = "<YOUR GRADES SHEET ID>"
+     GRADES_RANGE_NAME = "A4:M"
+     GRADES_BASE_COLUMN = 6
+     GRADES_INCOMP_COL_START = 1
+     GRADES_INCOMP_COL_END = 5
+      
+     SEED_SHEET_ID = "<YOUR SEED SHEET ID>"
+     SEED_RANGE_NAME = "A2:I"
+     SEED_BASE_COLUMN = 3
+     SEED_INCOMP_COL_START = 1
+     SEED_INCOMP_COL_END = 5
+     ```
+  3. copy `key.json` file to `campy-bot` directory
 
 ## Usage
 
