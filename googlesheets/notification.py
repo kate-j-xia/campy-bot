@@ -13,20 +13,6 @@ from . import utils
 from . import constants as const
 import config
 
-""" GRADES_SHEET_ID = "18Eeer2gG0OCfR9LwxlFhiXLE2kyLXTMMTvse3SUiaYo"
-GRADES_RANGE_NAME = "A4:M"
-GRADES_NOTIFY_RANGE_NAME = "H4:M"
-GRADES_BASE_COLUMN = 6
-GRADES_INCOMP_COL_START = 1
-GRADES_INCOMP_COL_END = 5
-
-SEED_SHEET_ID = "1Gyuh0IaMBrzfruZvKXVEH2KCS8sW-49VAn8QYWpxQ-w"
-SEED_RANGE_NAME = "A2:I"
-SEED_NOTIFY_RANGE_NAME = "E2:I"
-SEED_BASE_COLUMN = 3
-SEED_INCOMP_COL_START = 1
-SEED_INCOMP_COL_END = 5
- """
 COMPLETION_SHEET_ID = "14Uo9HBfeEo-j7kzHLQ3NDRsjKyshA_EcfhX2S4GKRBM" 
 COMPLETION_RANGE_NAME = "C2:I"
 COMPLETION_COL_START = 2
@@ -71,7 +57,7 @@ def check_seed_incompletes(incompletes: dict, values: list, which_column=0):
     print(f'check_seed_incompletes(): requested for column {which_column}...')    
     for row in values:        
         if row and row[2] and row[2].lower() != 'writer':
-            print(f'check_seed_incompletes(): {row}')
+            # print(f'check_seed_incompletes(): {row}')
             writer = utils.get_writer_name(row[2])
             # column_name = const.Incompletes(which_column).name
             # status = int(row[SEED_BASE_COLUMN + which_column])           
