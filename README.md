@@ -53,7 +53,7 @@ pip install -r requirements.txt
 - Make sure the Google sheets are filled with correct columns and values
 - Prepare configuration/env variables:
 
-  1. copy and update config.py:
+  1. update config.py and copy it to `campy-bot` directory:
      
      ```
      SLACK_CLIENT_TOKEN = "<Your slack client TOKEN>"
