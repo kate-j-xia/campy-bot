@@ -2,8 +2,8 @@
 
 A Slack bot for The Campanile's Cycle Management
 
-
 ## Introduction
+
 This is a Slack Bot for Journalism Production that allows users to notify staff writers on pending assignments and grade their works. The Slack bot is a service on cloud that responds to the user commands on Slack. It automates the management process for users and their assignments on the Slack channels.
 
 ## Features
@@ -54,6 +54,7 @@ pip install -r requirements.txt
 - Prepare configuration/env variables:
 
   1. copy and update config.py:
+     
      ```
      SLACK_CLIENT_TOKEN = "<Your slack client TOKEN>"
      SLACK_CHANNEL_ID = "#campy"
@@ -71,11 +72,13 @@ pip install -r requirements.txt
      SEED_INCOMP_COL_START = 1
      SEED_INCOMP_COL_END = 5
      ```
+     
   3. copy `key.json` file to `campy-bot` directory
 
 ## Usage
 
 Use following commands:
+
 - `/campy`: display the help text
 - `/campy notify <number 1 - 5>`: notify users of incompleted assignments
 
