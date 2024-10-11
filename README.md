@@ -1,6 +1,6 @@
 # The Campanile Slack Bot
 
-A Slack bot for The Campanile's Cycle Management
+A Slack bot for The Campanile's Production Cycle Management
 
 ## Introduction
 
