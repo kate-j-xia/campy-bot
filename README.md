@@ -50,7 +50,7 @@ pip install -r requirements.txt
 
 - Join the Campy workspace and channels as necessary
 - Create the necessary Google Spreadsheets, eg. SEED, GRADES, etc.
-- Make sure the Google sheets are filled with *correct columns and values*
+- Make sure the Google sheets are filled with **correct/valid columns and values**
 - Prepare configuration/env variables:
 
   1. update config.py and copy it to `campy-bot` directory:
