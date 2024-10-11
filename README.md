@@ -19,9 +19,11 @@ To use the Campy Slack Bot, follow these steps:
 
 - Create Python Virtual env:
 
-`python3 -m venv venv`
-`source ./venv/bin/activate`
-`cd venv`
+```
+python3 -m venv venv
+source ./venv/bin/activate
+cd venv
+```
 
 - Clone the repository:
 
