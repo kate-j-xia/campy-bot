@@ -27,16 +27,22 @@ cd venv
 
 - Clone the repository:
 
-`git clone https://github.com/kate-j-xia/campy-bot.git`
+```
+git clone https://github.com/kate-j-xia/campy-bot.git
+```
 
 
 - Navigate to the project directory:
 
-`cd campy-bot`
+```
+cd campy-bot
+```
 
 - Install the dependencies:
 
-`pip install -r requirements.txt`
+```
+pip install -r requirements.txt
+```
 
 (NOTE, you might need to adjust the requirements.txt file to accommodate your env)
 
