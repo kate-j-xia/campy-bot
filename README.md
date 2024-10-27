@@ -1,10 +1,10 @@
-# The Campanile Slack Bot
+# Newspaper Production Slackbot
 
-A Slack bot for The Campanile's Production Cycle Management
+A Slack bot for Production Cycle Management
 
 ## Introduction
 
-This is a Slack Bot for Journalism Production that allows users to notify staff writers on pending assignments and grade their works. The Slack bot is a service on cloud that responds to the user commands on Slack. It automates the management process for users and their assignments on the Slack channels.
+This is a Slackbot for journalism production that allows users to notify staff writers on pending assignments and grade their works. The Slackbot is a service on cloud that responds to the user commands on Slack. It automates the management process for users and their assignments on the Slack channels.
 
 ## Features
 
